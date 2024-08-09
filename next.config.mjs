@@ -1,12 +1,14 @@
 /** @type {import('next').NextConfig} */
+
+
 const nextConfig = {
+
+  transpilePackages: ['pino-pretty'],
   experimental: {
-    appDir: true,
+    serverComponentsExternalPackages: ['sequelize'],
   },
-  webpack: (config) => {
-    config.externals.push('pino-pretty', 'lokijs', 'encoding');
-    return config;
-  },
+
+
 };
 
 export default nextConfig;

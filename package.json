@@ -11,16 +11,23 @@
   },
   "dependencies": {
     "@project-serum/anchor": "^0.26.0",
+    "@solana/actions": "^1.6.1",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.95.2",
     "axios": "^1.7.3",
+    "canvas": "^2.11.2",
     "cron": "^3.1.7",
+    "dotenv": "^16.4.5",
+    "mysql2": "^3.11.0",
     "next": "^14.2.5",
+    "node-cron": "^3.0.3",
+    "pino-pretty": "^11.2.2",
     "react": "^18",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "sequelize": "^6.37.3"
   },
   "devDependencies": {
     "eslint": "^8",
