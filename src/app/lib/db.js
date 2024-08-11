@@ -32,7 +32,7 @@ class DB {
     this.models = initModels(this.sequelize);
 
     // Automatically create tables
-    await this.sequelize.sync({ alter: true });
+    //await this.sequelize.sync({ alter: true });
 
     console.log('Database connected and tables created/updated');
   }

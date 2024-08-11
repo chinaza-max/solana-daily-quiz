@@ -19,7 +19,10 @@ export default (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-   
+    activeUntil: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    }
   }, {
     timestamps: true,
   });

@@ -7,6 +7,9 @@ import {
   } from "@solana/actions";
   import { getDB } from '../../lib/db.js';
   import {PublicKey} from "@solana/web3.js"
+  import fs from 'fs/promises';
+  import path from 'path';
+  import { Sequelize, Op } from 'sequelize';
 
   import { createCanvas, loadImage, registerFont } from 'canvas';
   const ATTEMPTS_FILE = path.join(process.cwd(), 'data', 'attempts.json');
@@ -16,24 +19,51 @@ import {
   export const GET = async (req) => {
     try {
 
+        const currentTime = new Date();
         const requestUrl = new URL(req.url);
 
-
         const db = await getDB();
-        const questions = await db.models.Question.findOne({
-            where: { answered: false },
+        let questions = await db.models.Question.findOne({
+          where: {
+            activeUntil: { [Op.gt]: currentTime }
+          },
+          order: [['activeUntil', 'DESC']]
         });
+
+        if (!questions) {
+          questions = await db.models.Question.findOne({
+            where: { answered: false },
+            order: [['createdAt', 'ASC']]
+          });
+    
+          if (questions) {
+            // Set the new question as active for the next 24 hours
+            questions.activeUntil = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
+            await questions.save();
+          }
+        }
+
 
         const users = await db.models.User.findAll({
             order: [['points', 'DESC']],
             limit: 3
         });
 
+
+        let usersAsString 
+        if(users){
+          usersAsString = users.map((user, index) => {
+            // Truncate the wallet address to first 4 and last 4 characters
+            const shortWallet = `${user.wallet.slice(0, 4)}...${user.wallet.slice(-4)}`;
+            return `\n#${index + 1}🔥 ${shortWallet}; points ${user.points}pts`;
+          }).join(' | ');
+        }
+
         if (!questions) {
-            return new Response(JSON.stringify({ message: "No unanswered questions found" }), {
-                status: 400,
-                headers: ACTIONS_CORS_HEADERS,
-            });
+          return new Response(JSON.stringify({ message: "No unanswered questions found" }), {
+              status: 400,
+              headers: ACTIONS_CORS_HEADERS,
+          });
         }
 
         const actionsArray =JSON.parse(questions.dataValues.options).map(option => ({
@@ -45,13 +75,13 @@ import {
 
 
         const payload = {
-            title: `Solana daily quiz`,
+            title: `Solana daily quiz (${questions.dataValues.answered ? 'ANSWERED':'UN-ANSWERED'})`,
             icon: `data:image/png;base64,${imageBuffer.toString('base64')}`,
-            description: 'sssssss',
+            description: `You have only one attempt for a new question.\n ${users.length>0?'Rank Top 3;':''} ${usersAsString}`,
             links: {
               actions: actionsArray,
             },
-          };
+          };  
       
           return Response.json(payload, {
             headers: ACTIONS_CORS_HEADERS,
@@ -76,10 +106,9 @@ import {
       const requestUrl = new URL(req.url);
       const { answerId, questionId, answer } = validatedQueryParams(requestUrl);
       const body= await req.json();
-      const account = new PublicKey(body.account);
+      const publicAddress = new PublicKey(body.account);
 
   
-
       const db = await getDB();
       const question = await db.models.Question.findOne({
         where: { id: questionId },
@@ -92,7 +121,6 @@ import {
         });
       }
 
-
       if (question.answered) {
         return new Response(JSON.stringify({ message: "This question has already been answered" }), {
           status: 400,
@@ -100,43 +128,63 @@ import {
         });
       }
 
+      await attemptManager.loadAttempts();
 
-      await writeJsonFile(ATTEMPTS_FILE, attempts);
+      if (attemptManager.canAttempt(publicAddress, questionId)) {
+
+        const recorded = await attemptManager.recordAttempt(publicAddress, questionId, answer);
+
+        if (recorded) {
+
+          const isCorrect = answer ===  JSON.parse(question.options)[answerId];
+          console.log( isCorrect)
+          console.log( answer)
+          console.log( JSON.parse(question.options)[answerId])
 
 
-      let questions= [];
-  
-      const matchingQuestion = questions.find(
-        question => question.actionId === uniqueAction && question.id === questionId
-      );
-  
-      if (!matchingQuestion) {
-        return new Response(JSON.stringify({ message: "Question not found" }), {
+          const [user, created] = await db.models.User.findOrCreate({
+            where: { wallet: publicAddress.toString() },
+            defaults: { points: 0 }
+          });
+
+          
+          if (isCorrect) {
+            // If the answer is correct, add 2 points
+            await user.increment('points', { by: 2 });
+               // Mark the question as answered
+            await question.update({ answered: true });
+
+            return new Response(JSON.stringify({ message: "Attempt recorded successfully." }), {
+                status: 200,
+                headers: ACTIONS_CORS_HEADERS
+            });
+          }else{
+            return new Response(JSON.stringify({ message: "Wrong answer 🥺 try again tommorrow"}), {
+              status: 400,
+              headers: ACTIONS_CORS_HEADERS,
+            });
+          }
+          
+       
+
+
+      } else {
+          return new Response(JSON.stringify({ message: "Failed to record attempt." }), {
+              status: 500,
+              headers: ACTIONS_CORS_HEADERS
+          });
+      }
+
+      }
+      else{
+        return new Response(JSON.stringify({ message: "You've already attempted this question ."}), {
           status: 400,
           headers: ACTIONS_CORS_HEADERS,
         });
+
       }
-  
-      // Check if the question has already been answered
-      if (body.answers.includes(matchingQuestion.id)) {
-        return new Response(JSON.stringify({ message: "Question has already been answered" }), {
-          status: 400,
-          headers: ACTIONS_CORS_HEADERS,
-        });
-      }
-  
-      // Process the selected option and update the user's progress
-      // ...
-  
-      const payload = await createPostResponse({
-        fields: {
-          message: "Your quiz answer has been submitted successfully!",
-        },
-      });
-  
-      return Response.json(payload, {
-        headers: ACTIONS_CORS_HEADERS,
-      });
+
+
     } catch (err) {
       console.log(err);
       let message = "An unknown error occurred";
@@ -149,22 +197,8 @@ import {
   };
 
 
-  async function writeJsonFile(filename, data) {
-    await fs.writeFile(path.join(process.cwd(), filename), JSON.stringify(data, null, 2));
-  }
 
 
-async function readJsonFile(filename) {
-    try {
-      const data = await fs.readFile(path.join(process.cwd(), filename), 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        return {}; // Return an empty object if file doesn't exist
-      }
-      throw error;
-    }
-  }
   
 
   function validatedQueryParams(requestUrl) {
@@ -217,11 +251,6 @@ async function readJsonFile(filename) {
 
 
 
-
-
-
-
-
   async function generateDynamicImage(text, requestUrl) {
     const canvas = createCanvas(800, 600);
     const ctx = canvas.getContext('2d');
@@ -267,11 +296,51 @@ async function readJsonFile(filename) {
     ctx.fillText(line, x, y);
   }
 
+  class AttemptManager {
+    constructor(filename) {
+        this.filename = path.join(process.cwd(), filename);
+        this.attempts = {};
+    }    
+    
+    async loadAttempts() {
 
-  // GET THE QUESTION 
-  // CHECK IF THE QUESTION HAS BEEN ANSWERED
-  // IF YES DECLINE
-  // IF NO 
-  // CHECK THE ANSWER IS CORRECT
-  // IF YES SCORE HIM 
-  // IF NO TEMPORARY STORE HIM IN A JSON USING QUESTION ID SO THAT HE WONT TRY AGAIN ONE TRIAL PER PERSON
+      console.log(this.filename)
+        try {
+            await fs.access(this.filename);
+            const data = await fs.readFile(this.filename, 'utf8');
+            this.attempts = JSON.parse(data);
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                await this.saveAttempts();
+                console.log('Attempts file created.');
+            } else {
+                console.error('Error loading attempts:', error);
+            }
+        }
+    }
+
+    async saveAttempts() {
+        await fs.writeFile(this.filename, JSON.stringify(this.attempts, null, 2));
+    }
+
+    canAttempt(publicAddress, questionId) {
+        if (!this.attempts[questionId]) {
+            this.attempts[questionId] = {};
+        }
+        return !this.attempts[questionId][publicAddress];
+    }
+
+    async recordAttempt(publicAddress, questionId, answer) {
+        if (this.canAttempt(publicAddress, questionId)) {
+            this.attempts[questionId][publicAddress] = {
+                timestamp: new Date().toISOString(),
+                answer
+            };
+            await this.saveAttempts();
+            return true;
+        }
+        return false;
+    }
+}
+
+const attemptManager = new AttemptManager('attempts.json');
