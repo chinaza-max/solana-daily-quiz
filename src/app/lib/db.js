@@ -28,6 +28,7 @@ class DB {
       password:'56223b3f7bf76757b9425595cff59f80e9a1ff0c',
       database:'solanaDailyQuiz_satellites',
       dialect: "mysql",
+      dialectModule:require('mysql2'),
       logging: console.log,     
       logQueryParameters: true
     };
