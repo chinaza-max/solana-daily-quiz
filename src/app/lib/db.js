@@ -14,19 +14,19 @@ class DB {
 
     //console.log(serverConfig)
     
-    const options = {
+   /* const options = {
       dialect: "mysql",
       host: serverConfig.DB_HOST,
       port: Number(serverConfig.DB_PORT),
       logging: console.log,     
       logQueryParameters: true,
-    };
+    };*/
    
-  /*  const options = {
+    const options = {
       dialect: "mysql",
       logging: console.log,     
       logQueryParameters: true
-    };*/
+    };
 
     // `mysql://${serverConfig.DB_USERNAME}:${serverConfig.DB_PASSWORD}@${serverConfig.DB_HOST}:${serverConfig.DB_PORT}/${serverConfig.DB_NAME}`;
     const dbUri =` mysql://solanaDailyQuiz_satellites:56223b3f7bf76757b9425595cff59f80e9a1ff0c@pid.h.filess.io:3307/solanaDailyQuiz_satellites`
