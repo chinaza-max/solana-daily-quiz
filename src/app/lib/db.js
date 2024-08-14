@@ -32,7 +32,7 @@ class DB {
     const dbUri =` mysql://solanaDailyQuiz_satellites:56223b3f7bf76757b9425595cff59f80e9a1ff0c@pid.h.filess.io:3307/solanaDailyQuiz_satellites`
   /*  this.sequelize = new Sequelize(
       serverConfig.DB_NAME,
-      serverConfig.DB_USERNAME,
+      serverConfig.DB_USERNAME,   
       serverConfig.DB_PASSWORD,
       options
     );*/
