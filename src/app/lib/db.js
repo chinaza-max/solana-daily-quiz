@@ -38,7 +38,7 @@ class DB {
     );*/
 
     this.sequelize = new Sequelize(
-      dbUri, 
+      dbUri,      
       options
     );
      
