@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getDB } from '../../lib/db.js';
 
-export async function GET() {
+export const GET =async () => {
   try {
     const db = await getDB();
     const users = await db.models.User.findAll({
@@ -16,7 +16,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request) {
+export const POST = async (request) =>{
   try {
     const db = await getDB();
     const { wallet, points } = await request.json();

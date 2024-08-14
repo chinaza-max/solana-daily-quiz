@@ -9,7 +9,7 @@ import {
   import {PublicKey} from "@solana/web3.js"
   import fs from 'fs/promises';
   import path from 'path';
-  import { Sequelize, Op } from 'sequelize';
+  import {  Op } from 'sequelize';
 
   import { createCanvas, loadImage, registerFont } from 'canvas';
   const ATTEMPTS_FILE = path.join(process.cwd(), 'data', 'attempts.json');
@@ -58,12 +58,19 @@ import {
             return `\n#${index + 1}🔥 ${shortWallet}; points ${user.points}pts`;
           }).join(' | ');
         }
-
+        
         if (!questions) {
-          return new Response(JSON.stringify({ message: "No unanswered questions found" }), {
-              status: 400,
-              headers: ACTIONS_CORS_HEADERS,
+
+          const payload = {
+            title: `Solana daily quiz (No quiz available at the moment)`,
+            icon: new URL("/DailyQuiiz.jpg", requestUrl.origin).toString(),
+            description: `You have only one attempt for a new question.`,
+          };  
+      
+          return Response.json(payload, {
+            headers: ACTIONS_CORS_HEADERS,
           });
+      
         }
 
         const actionsArray =JSON.parse(questions.dataValues.options).map(option => ({
@@ -256,14 +263,13 @@ import {
     const ctx = canvas.getContext('2d');
   
 
-    console.log(requestUrl.origin)
-
-    const backgroundImage = await loadImage(new URL("/download.png", requestUrl.origin).toString());
+    const backgroundImage = await loadImage(new URL("/DailyQuiiz.jpg", requestUrl.origin).toString());
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-  
-    // Set the font and text properties
+    
+
+    // Set the font and text properties         
     ctx.font = '35px Arial';
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 

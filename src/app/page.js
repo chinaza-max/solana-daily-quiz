@@ -4,6 +4,7 @@ import { useState } from 'react'
 import QuestionList from './components/QuestionList'
 import QuestionForm from './components/QuestionForm'
 import UserList from '../app/components/QuestionList'
+import Nav from '../app/components/navBar'
 
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { WalletProvider } from '@solana/wallet-adapter-react';
@@ -30,29 +31,23 @@ export default function Home() {
     <ConnectionProvider endpoint={process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT||clusterApiUrl(WalletAdapterNetwork.Devnet)}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
-          <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4">Solana Quiz App</h1>
-            <div className="mb-4">
-              <button
-                className={`mr-2 ${activeTab === 'questions' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                onClick={() => setActiveTab('questions')}
-              >
-                Questions
-              </button>
-              <button
-                className={`mr-2 ${activeTab === 'users' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                onClick={() => setActiveTab('users')}
-              >
-                Users
-              </button>
+
+          
+          <div className="container mx-auto p-4 ">
+
+            
+            <div className=''>
+              <Nav setActiveTabP={setActiveTab} activeTabP={activeTab} />
             </div>
             {activeTab === 'questions' && (
-              <>
+              <div style={{marginTop:"70px"}}>
                 <QuestionForm />
                 <QuestionList />
-              </>
+              </div>
             )}
             {activeTab === 'users' && <UserList />}
+
+            
           </div>
         </WalletModalProvider>
       </WalletProvider>

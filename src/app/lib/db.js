@@ -8,31 +8,44 @@ class DB {
   constructor() {
     this.sequelize = null;
     this.models = null;
-  }
+  }        
 
   async connectDB() {
 
-    console.log(serverConfig)
+    //console.log(serverConfig)
     
     const options = {
       dialect: "mysql",
       host: serverConfig.DB_HOST,
       port: Number(serverConfig.DB_PORT),
-      logging: console.log,
+      logging: console.log,     
       logQueryParameters: true,
     };
+   
+  /*  const options = {
+      dialect: "mysql",
+      logging: console.log,     
+      logQueryParameters: true
+    };*/
 
-    this.sequelize = new Sequelize(
+    // `mysql://${serverConfig.DB_USERNAME}:${serverConfig.DB_PASSWORD}@${serverConfig.DB_HOST}:${serverConfig.DB_PORT}/${serverConfig.DB_NAME}`;
+    const dbUri =` mysql://solanaDailyQuiz_satellites:56223b3f7bf76757b9425595cff59f80e9a1ff0c@pid.h.filess.io:3307/solanaDailyQuiz_satellites`
+  /*  this.sequelize = new Sequelize(
       serverConfig.DB_NAME,
       serverConfig.DB_USERNAME,
       serverConfig.DB_PASSWORD,
       options
+    );*/
+
+    this.sequelize = new Sequelize(
+      dbUri, 
+      options
     );
-
+     
     this.models = initModels(this.sequelize);
-
+     
     // Automatically create tables
-    //await this.sequelize.sync({ alter: true });
+   // await this.sequelize.sync({ alter: true });
 
     console.log('Database connected and tables created/updated');
   }
