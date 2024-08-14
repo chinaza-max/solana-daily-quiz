@@ -23,6 +23,10 @@ class DB {
     };*/
    
     const options = {
+      local:"pid.h.filess.io",
+      username:'solanaDailyQuiz_satellites',
+      password:'56223b3f7bf76757b9425595cff59f80e9a1ff0c',
+      database:'solanaDailyQuiz_satellites',
       dialect: "mysql",
       logging: console.log,     
       logQueryParameters: true
@@ -36,6 +40,13 @@ class DB {
       serverConfig.DB_PASSWORD,
       options
     );*/
+
+    this.sequelize = new Sequelize(
+     
+      options
+    )
+
+
 
     this.sequelize = new Sequelize(
       dbUri,      

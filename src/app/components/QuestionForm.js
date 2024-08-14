@@ -73,7 +73,7 @@ export default function QuestionForm() {
     <div className="bg-white shadow-md rounded-lg p-6 mb-8 mt-5">
 
   
-      <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">Create New Question 2</h2>
+      <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">Create New Question </h2>
 
         <div className={`${loading2 ?"":"hidden"} text-center`}>
             <div role="status">
