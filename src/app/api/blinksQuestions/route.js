@@ -262,7 +262,7 @@ import {
 
     try {
       //https://writetexttoimage.onrender.com
-      const response = await axios.post('http://localhost:4000/generate-image', {
+      const response = await axios.post('https://writetexttoimage.onrender.com/generate-image', {
         text
       });  
 
