@@ -70,16 +70,6 @@ import {
 
        // questions=null
         if (!questions) {
-          console.log("requestUrl.origin")
-          console.log("requestUrl.origin")
-          console.log("requestUrl.origin")
-
-          console.log(requestUrl.origin)
-
-          console.log(new URL("/DailyQuiiz.jpg", requestUrl.origin).toString())
-          console.log("requestUrl.origin")
-          console.log("requestUrl.origin")
-          console.log("requestUrl.origin")
 
           const payload = {
             title: `Solana daily quiz (No quiz available at the moment)`,
@@ -154,19 +144,16 @@ import {
         });
       }
 
-      await attemptManager.loadAttempts();
 
       if (attemptManager.canAttempt(publicAddress, questionId)) {
 
-        const recorded = await attemptManager.recordAttempt(publicAddress, questionId, answer);
+        const recorded =  attemptManager.recordAttempt(publicAddress, questionId, answer);
 
+        console.log(recorded)
         if (recorded) {
 
-          const isCorrect = answer ===  JSON.parse(question.options)[answerId];
-          console.log( isCorrect)
-          console.log( answer)
-          console.log( JSON.parse(question.options)[answerId])
-
+         // const isCorrect = answer ===  JSON.parse(question.options)[answerId];
+          const isCorrect = answer ===  question.options[answerId];
 
           const [user, created] = await db.models.User.findOrCreate({
             where: { wallet: publicAddress.toString() },
@@ -190,16 +177,13 @@ import {
               headers: ACTIONS_CORS_HEADERS,
             });
           }
-          
-       
 
-
-      } else {
-          return new Response(JSON.stringify({ message: "Failed to record attempt." }), {
-              status: 500,
-              headers: ACTIONS_CORS_HEADERS
-          });
-      }
+        } else {
+            return new Response(JSON.stringify({ message: "Failed to record attempt." }), {
+                status: 500,
+                headers: ACTIONS_CORS_HEADERS
+            });
+        }
 
       }
       else{
@@ -274,152 +258,26 @@ import {
     };
   }
 
-  function wrapText(text, maxWidth, fontSize) {
-    const words = text.split(' ');
-    const lines = [];
-    let currentLine = '';
-  
-    words.forEach(word => {
-      if ((currentLine + word).length * (fontSize / 2) < maxWidth) {
-        currentLine += (currentLine ? ' ' : '') + word;
-      } else {
-        lines.push(currentLine);
-        currentLine = word;
-      }
-    });
-    lines.push(currentLine);
-  
-    return lines;
-  }
-
   async function generateDynamicImage(text) {
 
     try {
-      const response = await axios.post('https://writetexttoimage.onrender.com/generate-image', {
-        text: 'Hello, this is a sample text!'
+      //https://writetexttoimage.onrender.com
+      const response = await axios.post('http://localhost:4000/generate-image', {
+        text
       });  
 
-      console.log(response.data.imageUrl)
       return response.data.imageUrl
     } catch (error) {            
       console.error('Error:', error);
     }
 
-    return
-    try {
-    const backgroundImage = await sharp(response.data)
-      .resize(width, height)
-      .toBuffer();
-  
-    const wrappedText = wrapText(text, maxWidth, fontSize);
-    const lineHeight = fontSize * 1.2;
-    const totalTextHeight = wrappedText.length * lineHeight;
-    const startY = (height - totalTextHeight) / 2;
-  
-    const svgText = `
-      <svg width="${width}" height="${height}">
-        <style>
-          .text { fill: white; font-size: ${fontSize}px; font-family: Arial; }
-        </style>
-        ${wrappedText.map((line, index) => 
-          `<text x="${width/2}" y="${startY + lineHeight * (index + 0.5)}" 
-                 text-anchor="middle" class="text">${line}</text>`
-        ).join('')}
-      </svg>
-    `;
-  
-    const imageBuffer = await sharp(backgroundImage)
-      .composite([
-        {
-          input: Buffer.from(svgText),
-          top: 0,
-          left: 0,
-        },
-      ])
-      .png()
-      .toBuffer();
-
-
-      return `data:image/png;base64,${imageBuffer.toString('base64')}`;
-
-    
-    } catch (error) {
-      console.error('Error generating image:', error);
-      throw new Error(`Failed to generate image: ${error.message}`);
-    }
-  
-  }
-
-/*
-  async function generateDynamicImage(text, requestUrl) {
-    const canvas = createCanvas(800, 600);
-    const ctx = canvas.getContext('2d');
-  
-
-    const backgroundImage = await loadImage(new URL("/DailyQuiiz.jpg", requestUrl.origin).toString());
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-    
-
-    // Set the font and text properties         
-    ctx.font = '35px Arial';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-  // Draw the text in the center of the canvas
-  const maxWidth = 700; // Maximum width for text wrapping
-  const lineHeight = 40;
-  wrapText(ctx, text, canvas.width / 2, canvas.height / 2, maxWidth, lineHeight);
-
-  
-    return canvas.toBuffer('image/png');
   }
 
 
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = text.split(' ');
-    let line = '';
-  
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + ' ';
-      const metrics = ctx.measureText(testLine);
-      const testWidth = metrics.width;
-      if (testWidth > maxWidth && n > 0) {
-        ctx.fillText(line, x, y);
-        line = words[n] + ' ';
-        y += lineHeight;
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line, x, y);
-  }*/
 
   class AttemptManager {
-    constructor(filename) {
-        this.filename = path.join(process.cwd(), filename);
+    constructor() {
         this.attempts = {};
-    }    
-    
-    async loadAttempts() {
-
-      console.log(this.filename)
-        try {
-            await fs.access(this.filename);
-            const data = await fs.readFile(this.filename, 'utf8');
-            this.attempts = JSON.parse(data);
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                await this.saveAttempts();
-                console.log('Attempts file created.');
-            } else {
-                console.error('Error loading attempts:', error);
-            }
-        }
-    }
-
-    async saveAttempts() {
-        await fs.writeFile(this.filename, JSON.stringify(this.attempts, null, 2));
     }
 
     canAttempt(publicAddress, questionId) {
@@ -429,19 +287,27 @@ import {
         return !this.attempts[questionId][publicAddress];
     }
 
-    async recordAttempt(publicAddress, questionId, answer) {
+    recordAttempt(publicAddress, questionId, answer) {
         if (this.canAttempt(publicAddress, questionId)) {
             this.attempts[questionId][publicAddress] = {
                 timestamp: new Date().toISOString(),
                 answer
             };
-            await this.saveAttempts();
             return true;
         }
         return false;
     }
+
+    getAttempts() {
+        return this.attempts;
+    }
+
+    setAttempts(attempts) {
+        this.attempts = attempts;
+    }
 }
 
-const attemptManager = new AttemptManager('attempts.json');
+const attemptManager = new AttemptManager();
+
 //https://dial.to/devnet?action=solana-action:https://www.solana-daily-quiz.xyz//api/blinksQuestions
 //https://dial.to/devnet?action=solana-action:http://localhost:3000/api/blinksQuestions
