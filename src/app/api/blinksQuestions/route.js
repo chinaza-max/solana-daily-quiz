@@ -297,10 +297,13 @@ import {
     const height = 600;
     const fontSize = 35;
     const maxWidth = 700;
-  
-    const imagePath = path.join(__dirname, 'DailyQuiiz.jpg');
+
+    const imageUrl = `https://www.solana-daily-quiz.xyz/DailyQuiiz.jpg`;
+
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+
     try {
-    const backgroundImage = await sharp(imagePath)
+    const backgroundImage = await sharp(response.data)
       .resize(width, height)
       .toBuffer();
   
