@@ -74,7 +74,6 @@ import {
       
         }
 
-  
         console.log("questions")
         console.log(questions)
         console.log("questions")
@@ -84,12 +83,7 @@ import {
             href: `/api/blinksQuestions?answerId=${questions.dataValues.answer}&questionId=${questions.dataValues.id}&answer=${option}`,
         }));
 
-       
-
         const imageBuffer = await generateDynamicImage(questions.dataValues.question, requestUrl);
-
-     
-
 
         const payload = {   
             title: `Solana daily quiz (${questions.dataValues.answered ? 'ANSWERED':'UN-ANSWERED'})`,
