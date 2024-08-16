@@ -30,6 +30,7 @@ import {
           order: [['activeUntil', 'DESC']]
         });
 
+
         if (!questions) {
           questions = await db.models.Question.findOne({
             where: { answered: false },
@@ -73,15 +74,24 @@ import {
       
         }
 
-        const actionsArray =JSON.parse(questions.dataValues.options).map(option => ({
+  
+        console.log("questions")
+        console.log(questions)
+        console.log("questions")
+
+        const actionsArray =/*JSON.parse(*/questions.dataValues.options/*)*/.map(option => ({
             label: option,
             href: `/api/blinksQuestions?answerId=${questions.dataValues.answer}&questionId=${questions.dataValues.id}&answer=${option}`,
         }));
 
+       
+
         const imageBuffer = await generateDynamicImage(questions.dataValues.question, requestUrl);
 
+     
 
-        const payload = {
+
+        const payload = {   
             title: `Solana daily quiz (${questions.dataValues.answered ? 'ANSWERED':'UN-ANSWERED'})`,
             icon: `data:image/png;base64,${imageBuffer.toString('base64')}`,
             description: `You have only one attempt for a new question.\n ${users.length>0?'Rank Top 3;':''} ${usersAsString}`,

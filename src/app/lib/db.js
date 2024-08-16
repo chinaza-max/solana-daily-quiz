@@ -52,7 +52,7 @@ class DB {
     this.sequelize = new Sequelize(
       dbUri,      
       options
-    );
+    );     
      
     this.models = initModels(this.sequelize);
      
