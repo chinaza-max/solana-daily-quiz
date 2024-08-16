@@ -74,10 +74,6 @@ import {
       
         }
 
-        console.log("questions")
-        console.log(questions)
-        console.log("questions")
-
         const actionsArray =/*JSON.parse(*/questions.dataValues.options/*)*/.map(option => ({
             label: option,
             href: `/api/blinksQuestions?answerId=${questions.dataValues.answer}&questionId=${questions.dataValues.id}&answer=${option}`,
@@ -355,3 +351,5 @@ import {
 }
 
 const attemptManager = new AttemptManager('attempts.json');
+//https://dial.to/devnet?action=solana-action:https://www.solana-daily-quiz.xyz//api/blinksQuestions
+//https://dial.to/devnet?action=solana-action:http://localhost:3000/api/blinksQuestions
