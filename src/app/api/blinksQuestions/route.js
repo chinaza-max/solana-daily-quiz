@@ -12,6 +12,7 @@ import {
   import {  Op } from 'sequelize';
   import sharp from 'sharp';
   import { fileURLToPath } from 'url';
+  import axios from 'axios';
 
 
   const __filename = fileURLToPath(import.meta.url);
