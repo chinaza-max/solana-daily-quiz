@@ -59,7 +59,7 @@ import {
             return `\n#${index + 1}🔥 ${shortWallet}; points ${user.points}pts`;
           }).join(' | ');
         }
-        questions=null
+        //questions=null
         if (!questions) {
 
           const payload = {
@@ -94,7 +94,8 @@ import {
         const payload = {   
             title: `Solana daily quiz (${questions.dataValues.answered ? 'ANSWERED':'UN-ANSWERED'})`,
             icon: `data:image/png;base64,${imageBuffer.toString('base64')}`,
-            description: `You have only one attempt for a new question.\n ${users.length>0?'Rank Top 3;':''} ${usersAsString}`,
+            //description: `You have only one attempt for a new question.\n ${users.length>0?'Rank Top 3;':''} ${usersAsString}`,
+            description: `You have only one attempt for a new question.`,
             links: {
               actions: actionsArray,
             },
