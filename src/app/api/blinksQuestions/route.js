@@ -59,7 +59,7 @@ import {
             return `\n#${index + 1}🔥 ${shortWallet}; points ${user.points}pts`;
           }).join(' | ');
         }
-        //questions=null
+        questions=null
         if (!questions) {
 
           const payload = {
