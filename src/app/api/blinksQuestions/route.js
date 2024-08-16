@@ -10,6 +10,12 @@ import {
   import fs from 'fs/promises';
   import path from 'path';
   import {  Op } from 'sequelize';
+  import sharp from 'sharp';
+  import { fileURLToPath } from 'url';
+
+
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
 
   import { createCanvas, loadImage, registerFont } from 'canvas';
   const ATTEMPTS_FILE = path.join(process.cwd(), 'data', 'attempts.json');
@@ -95,7 +101,7 @@ import {
 
         const payload = {   
             title: `Solana daily quiz (${questions.dataValues.answered ? 'ANSWERED':'UN-ANSWERED'})`,
-            icon: `data:image/png;base64,${imageBuffer.toString('base64')}`,
+            icon:imageBuffer/* `data:image/png;base64,${imageBuffer.toString('base64')}`*/,
             description: `You have only one attempt for a new question.\n ${users.length>0?'Rank Top 3;':''} ${usersAsString}`,
             links: {
               actions: actionsArray,
@@ -267,9 +273,68 @@ import {
     };
   }
 
+  function wrapText(text, maxWidth, fontSize) {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+  
+    words.forEach(word => {
+      if ((currentLine + word).length * (fontSize / 2) < maxWidth) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    lines.push(currentLine);
+  
+    return lines;
+  }
 
+  async function generateDynamicImage(text, requestUrl) {
 
+    const width = 800;
+    const height = 600;
+    const fontSize = 35;
+    const maxWidth = 700;
+  
+    const imagePath = path.join(__dirname, 'DailyQuiiz.jpg');
 
+    const backgroundImage = await sharp(imagePath)
+      .resize(width, height)
+      .toBuffer();
+  
+    const wrappedText = wrapText(text, maxWidth, fontSize);
+    const lineHeight = fontSize * 1.2;
+    const totalTextHeight = wrappedText.length * lineHeight;
+    const startY = (height - totalTextHeight) / 2;
+  
+    const svgText = `
+      <svg width="${width}" height="${height}">
+        <style>
+          .text { fill: white; font-size: ${fontSize}px; font-family: Arial; }
+        </style>
+        ${wrappedText.map((line, index) => 
+          `<text x="${width/2}" y="${startY + lineHeight * (index + 0.5)}" 
+                 text-anchor="middle" class="text">${line}</text>`
+        ).join('')}
+      </svg>
+    `;
+  
+    const imageBuffer = await sharp(backgroundImage)
+      .composite([
+        {
+          input: Buffer.from(svgText),
+          top: 0,
+          left: 0,
+        },
+      ])
+      .png()
+      .toBuffer();
+  
+    return `data:image/png;base64,${imageBuffer.toString('base64')}`;
+  }
+/*
   async function generateDynamicImage(text, requestUrl) {
     const canvas = createCanvas(800, 600);
     const ctx = canvas.getContext('2d');
@@ -312,7 +377,7 @@ import {
       }
     }
     ctx.fillText(line, x, y);
-  }
+  }*/
 
   class AttemptManager {
     constructor(filename) {
