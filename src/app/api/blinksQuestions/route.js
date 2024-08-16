@@ -294,15 +294,18 @@ import {
 
   async function generateDynamicImage(text) {
 
-    const width = 800;
-    const height = 600;
-    const fontSize = 35;
-    const maxWidth = 700;
+    try {
+      const response = await axios.post('https://writetexttoimage.onrender.com/generate-image', {
+        text: 'Hello, this is a sample text!'
+      });  
 
-    const imageUrl = `https://www.solana-daily-quiz.xyz/DailyQuiiz.jpg`;
+      console.log(response.data.imageUrl)
+      return response.data.imageUrl
+    } catch (error) {            
+      console.error('Error:', error);
+    }
 
-    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-
+    return
     try {
     const backgroundImage = await sharp(response.data)
       .resize(width, height)
