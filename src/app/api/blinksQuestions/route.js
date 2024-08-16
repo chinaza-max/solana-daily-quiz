@@ -61,7 +61,7 @@ import {
         }
 
 
-        questions=null
+       // questions=null
         if (!questions) {
           console.log("requestUrl.origin")
           console.log("requestUrl.origin")
