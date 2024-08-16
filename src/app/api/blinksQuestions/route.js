@@ -67,7 +67,7 @@ import {
             icon: new URL("/DailyQuiiz.jpg", requestUrl.origin).toString(),
             description: `You have only one attempt for a new question.`,
           };  
-      
+         
           return Response.json(payload, {
             headers: ACTIONS_CORS_HEADERS,
           });
