@@ -155,13 +155,11 @@ import {
          // const isCorrect = answer ===  JSON.parse(question.options)[answerId];
           const isCorrect = answer ===  question.options[answerId];
 
-          const [user, created] = await db.models.User.findOrCreate({
-            where: { wallet: publicAddress.toString() },
-            defaults: { points: 0 }
-          });
-
-          
           if (isCorrect) {
+            const [user, created] = await db.models.User.findOrCreate({
+              where: { wallet: publicAddress.toString() },
+              defaults: { points: 0 }
+            });
             // If the answer is correct, add 2 points
             await user.increment('points', { by: 2 });
                // Mark the question as answered
