@@ -291,7 +291,7 @@ import {
     return lines;
   }
 
-  async function generateDynamicImage(text, requestUrl) {
+  async function generateDynamicImage(text) {
 
     const width = 800;
     const height = 600;
@@ -299,7 +299,7 @@ import {
     const maxWidth = 700;
   
     const imagePath = path.join(__dirname, 'DailyQuiiz.jpg');
-
+    try {
     const backgroundImage = await sharp(imagePath)
       .resize(width, height)
       .toBuffer();
@@ -331,9 +331,18 @@ import {
       ])
       .png()
       .toBuffer();
+
+
+      return `data:image/png;base64,${imageBuffer.toString('base64')}`;
+
+    
+    } catch (error) {
+      console.error('Error generating image:', error);
+      throw new Error(`Failed to generate image: ${error.message}`);
+    }
   
-    return `data:image/png;base64,${imageBuffer.toString('base64')}`;
   }
+
 /*
   async function generateDynamicImage(text, requestUrl) {
     const canvas = createCanvas(800, 600);
