@@ -59,8 +59,20 @@ import {
             return `\n#${index + 1}🔥 ${shortWallet}; points ${user.points}pts`;
           }).join(' | ');
         }
+
+
         questions=null
         if (!questions) {
+          console.log("requestUrl.origin")
+          console.log("requestUrl.origin")
+          console.log("requestUrl.origin")
+
+          console.log(requestUrl.origin)
+
+          console.log(new URL("/DailyQuiiz.jpg", requestUrl.origin).toString())
+          console.log("requestUrl.origin")
+          console.log("requestUrl.origin")
+          console.log("requestUrl.origin")
 
           const payload = {
             title: `Solana daily quiz (No quiz available at the moment)`,
